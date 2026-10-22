@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Repo Lens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF1F5; --panel:#FFFFFF; --ink:#1B2A41; --muted:#5B6B82; --line:#C9D2DE;
+  --accent:#2F5BEA; --accent-soft:#DCE5FD; --ok:#3F7D57; --warn:#9A6B12;
+  --sans:"Bricolage Grotesque", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121925; --panel:#1A2333; --ink:#E4EAF3; --muted:#93A3BA; --line:#2E3B51;
+    --accent:#7B9BFF; --accent-soft:#24335A; --ok:#7CC49A; --warn:#E3B45A;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121925; --panel:#1A2333; --ink:#E4EAF3; --muted:#93A3BA; --line:#2E3B51;
+  --accent:#7B9BFF; --accent-soft:#24335A; --ok:#7CC49A; --warn:#E3B45A;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.5}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+
+.wrap{max-width:1180px;margin:0 auto;padding:28px 20px 48px}
+header h1{font-size:clamp(28px,4vw,40px);font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
+header p{margin:0;color:var(--muted);max-width:62ch}
+
+.inputbar{display:flex;gap:10px;margin:24px 0 10px;flex-wrap:wrap}
+.inputbar input{flex:1 1 320px;min-width:0;font:500 16px var(--mono);padding:14px 16px;border:2px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink)}
+.inputbar input:focus{border-color:var(--accent);outline:none}
+.btn{font:600 15px var(--sans);padding:12px 18px;border-radius:10px;border:2px solid var(--ink);background:var(--ink);color:var(--bg);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--ink)}
+.examples{font-size:14px;color:var(--muted)}
+.examples button{font:500 13px var(--mono);background:none;border:none;color:var(--accent);cursor:pointer;padding:2px 4px;text-decoration:underline;text-underline-offset:3px}
+.msg{min-height:22px;font-size:14px;margin-top:6px;color:var(--warn)}
+
+.layout{display:grid;grid-template-columns:300px 1fr;gap:24px;margin-top:18px;align-items:start}
+@media (max-width:820px){.layout{grid-template-columns:1fr}}
+
+nav.tools{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px 0;position:sticky;top:calc(12px + env(safe-area-inset-top,0px));max-height:calc(100vh - 24px);overflow:auto}
+@media (max-width:820px){nav.tools{position:static;max-height:none}}
+nav.tools h2{font-size:14px;font-weight:600;color:var(--muted);margin:14px 18px 4px}
+nav.tools button{display:flex;justify-content:space-between;align-items:baseline;gap:8px;width:100%;text-align:left;background:none;border:none;border-left:4px solid transparent;padding:8px 18px 8px 14px;font:500 15px var(--sans);color:var(--ink);cursor:pointer}
+nav.tools button small{font:400 12px var(--mono);color:var(--muted);white-space:nowrap}
+nav.tools button:hover{background:var(--accent-soft)}
+nav.tools button[aria-pressed="true"]{border-left-color:var(--accent);background:var(--accent-soft);font-weight:600}
+nav.tools button:disabled{opacity:.45;cursor:not-allowed}
+
+main.body{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:28px;min-height:420px}
+.empty{color:var(--muted);max-width:52ch}
+.empty h2{color:var(--ink);font-size:22px;margin:0 0 8px}
+
+.swap{font-family:var(--mono);font-size:clamp(14px,2vw,18px);line-height:1.9;overflow-x:auto;padding:16px 18px;background:var(--bg);border-radius:10px;border:1px dashed var(--line)}
+.swap .from{color:var(--muted);text-decoration:line-through;text-decoration-thickness:1px}
+.swap .to{display:block}
+.swap mark{background:var(--accent);color:var(--panel);padding:1px 5px;border-radius:4px;animation:pop .35s ease-out}
+@keyframes pop{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.swap mark{animation:none}}
+
+.result h2{font-size:30px;font-weight:800;margin:22px 0 4px;letter-spacing:-.01em}
+.result .what{font-size:18px;margin:0 0 14px;max-width:60ch}
+.result .rule{font-size:14px;color:var(--muted);margin:0 0 18px}
+.result .rule code{font-family:var(--mono);background:var(--bg);padding:1px 6px;border-radius:4px;color:var(--ink)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px}
+.note{font-size:14px;color:var(--warn);border-left:3px solid var(--warn);padding:4px 12px;margin:0 0 18px;max-width:64ch}
+.uses{margin:0;padding-left:20px;max-width:62ch}
+.uses li{margin-bottom:6px}
+
+.all{margin-top:28px;border-top:1px solid var(--line);padding-top:18px}
+.all h3{font-size:16px;margin:0 0 10px}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+td{padding:6px 10px 6px 0;border-bottom:1px solid var(--line);vertical-align:top}
+td:first-child{white-space:nowrap;font-weight:600}
+td a{font-family:var(--mono);word-break:break-all}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Repo Lens</h1>
+    <p>Paste a GitHub repository, pick a tool, and see the link that opens that repo in it. Most of these work by swapping <code>github.com</code> in the URL for another site.</p>
+  </header>
+
+  <div class="inputbar">
+    <input id="repo" type="text" spellcheck="false" autocomplete="off"
+      placeholder="https://github.com/owner/repo  or  owner/repo" aria-label="GitHub repository URL">
+    <button class="btn" id="load">Load repo</button>
+  </div>
+  <div class="examples">Try:
+    <button data-ex="https://github.com/facebook/react">facebook/react</button>
+    <button data-ex="https://github.com/fastapi/fastapi">fastapi/fastapi</button>
+    <button data-ex="https://github.com/vercel/next.js/tree/canary/packages">vercel/next.js (a subfolder)</button>
+  </div>
+  <div class="msg" id="msg" role="status"></div>
+
+  <div class="layout">
+    <nav class="tools" id="tools" aria-label="Tools"></nav>
+    <main class="body" id="body" aria-live="polite"></main>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// Each tool: id, name, group, host (shown in sidebar), build(repo) -> url, what, rule, uses[], note?
+// repo = {owner, name, rest, full}  rest = anything after owner/repo (e.g. /tree/main/src)
+const TOOLS = [
+  // ---- Understand the code ----
+  {id:"gitdiagram", group:"Understand the project", name:"GitDiagram", host:"gitdiagram.com",
+   build:r=>`https://gitdiagram.com/${r.owner}/${r.name}`,
+   what:"Draws an interactive architecture diagram of the repo. Click a box to jump to that file or folder.",
+   rule:"github.com → gitdiagram.com", uses:["Getting the big picture of an unfamiliar codebase","Adding an architecture diagram to your README or slides"]},
+  {id:"deepwiki", group:"Understand the project", name:"DeepWiki", host:"deepwiki.com",
+   build:r=>`https://deepwiki.com/${r.owner}/${r.name}`,
+   what:"Generates a wiki-style documentation site for the repo, and lets you ask questions about the code in chat.",
+   rule:"github.com → deepwiki.com", uses:["Reading docs for a project that has none","Asking “where is X handled?” questions"],
+   note:"If a repo hasn’t been indexed yet, DeepWiki may ask you to request indexing first."},
+  {id:"gitingest", group:"Understand the project", name:"GitIngest", host:"gitingest.com",
+   build:r=>`https://gitingest.com/${r.owner}/${r.name}${r.rest}`,
+   what:"Turns the whole repo into one text digest (folder tree + file contents) you can paste into an AI chat.",
+   rule:"github.com → gitingest.com", uses:["Giving an AI the full code context","Filtering by file pattern or size before copying"]},
+  {id:"uithub", group:"Understand the project", name:"uithub", host:"uithub.com",
+   build:r=>`https://uithub.com/${r.owner}/${r.name}${r.rest}`,
+   what:"Shows the repo as a clean, token-counted text view that’s ready for an AI prompt.",
+   rule:"github.com → uithub.com", uses:["Checking how many tokens a repo is","Copying only certain file extensions"],
+   note:"Free for public repos, but it may ask you to sign in with GitHub."},
+  {id:"gitmcp", group:"Understand the project", name:"GitMCP", host:"gitmcp.io",
+   build:r=>`https://gitmcp.io/${r.owner}/${r.name}`,
+   what:"Gives you an MCP server URL for the repo, so AI assistants (Claude, Cursor, etc.) can read its docs and code directly.",
+   rule:"github.com → gitmcp.io", uses:["Connecting an AI coding assistant to a library’s real docs"]},
+  {id:"gitpodcast", group:"Understand the project", name:"GitPodcast", host:"gitpodcast.com",
+   build:r=>`https://gitpodcast.com/${r.owner}/${r.name}`,
+   what:"Generates a short audio podcast that explains the repository.",
+   rule:"github.com → gitpodcast.com", uses:["Listening to a project overview on the go"],
+   note:"Smaller community project, so availability can vary."},
+  {id:"sourcegraph", group:"Understand the project", name:"Sourcegraph", host:"sourcegraph.com",
+   build:r=>`https://sourcegraph.com/github.com/${r.owner}/${r.name}`,
+   what:"Code search and “go to definition / find references” navigation across the repo.",
+   rule:"prefix with sourcegraph.com/", uses:["Finding every usage of a function","Jumping between definitions without cloning"]},
+
+  // ---- Read code in an editor ----
+  {id:"githubdev", group:"Open in a browser editor", name:"github.dev", host:"github.dev",
+   build:r=>`https://github.dev/${r.owner}/${r.name}${r.rest}`,
+   what:"GitHub’s official VS Code in the browser. You can also press the “.” key on any repo page.",
+   rule:"github.com → github.dev", uses:["Browsing many files at once with a file tree","Making quick edits and commits"],
+   note:"Requires signing in to GitHub."},
+  {id:"github1s", group:"Open in a browser editor", name:"GitHub1s", host:"github1s.com",
+   build:r=>`https://github1s.com/${r.owner}/${r.name}${r.rest}`,
+   what:"Read-only VS Code view of the repo, no login needed.",
+   rule:"github.com → github1s.com", uses:["Reading code comfortably without signing in"]},
+
+  // ---- Run it ----
+  {id:"githubbox", group:"Run it online", name:"CodeSandbox", host:"githubbox.com",
+   build:r=>`https://githubbox.com/${r.owner}/${r.name}${r.rest}`,
+   what:"Opens the repo in CodeSandbox so you can run and preview it in the browser.",
+   rule:"github.com → githubbox.com", uses:["Trying a front-end project live","Forking a demo to experiment"]},
+  {id:"stackblitz", group:"Run it online", name:"StackBlitz", host:"stackblitz.com",
+   build:r=>`https://stackblitz.com/github/${r.owner}/${r.name}${r.rest}`,
+   what:"Boots the project in StackBlitz’s in-browser Node environment.",
+   rule:"github.com → stackblitz.com/github", uses:["Running JS/TS (Node, Vite, Next.js) projects instantly"]},
+  {id:"codespaces", group:"Run it online", name:"Codespaces", host:"codespaces.new",
+   build:r=>`https://codespaces.new/${r.owner}/${r.name}`,
+   what:"Creates a full cloud dev environment (VS Code + terminal) from the repo.",
+   rule:"github.com → codespaces.new", uses:["Running any language, including backends and databases"],
+   note:"Needs a GitHub account; usage beyond the free monthly hours is billed."},
+  {id:"gitpod", group:"Run it online", name:"Gitpod / Ona", host:"gitpod.io/#",
+   build:r=>`https://gitpod.io/#${r.full}`,
+   what:"Starts a cloud workspace for the repo by putting gitpod.io/# in front of the GitHub URL.",
+   rule:"prefix with gitpod.io/#", uses:["Ready-to-code environments driven by a .gitpod.yml"],
+   note:"Gitpod rebranded as Ona in 2025, so this link may redirect or ask you to sign up."},
+
+  // ---- History & stats ----
+  {id:"starhistory", group:"History and stats", name:"Star History", host:"star-history.com",
+   build:r=>`https://star-history.com/#${r.owner}/${r.name}&Date`,
+   what:"Plots how the repo’s star count grew over time.",
+   rule:"star-history.com/#owner/repo", uses:["Comparing popularity of similar libraries"]},
+  {id:"githistory", group:"History and stats", name:"Git History", host:"github.githistory.xyz",
+   build:r=>`https://github.githistory.xyz/${r.owner}/${r.name}${r.rest}`,
+   what:"Animates how a single file changed commit by commit.",
+   rule:"github.com → github.githistory.xyz", uses:["Seeing how a specific file evolved"],
+   note:"Works on a file link, e.g. github.com/owner/repo/blob/main/README.md. Paste a file URL above to use it properly.",
+   needsFile:true},
+  {id:"usefulforks", group:"History and stats", name:"Useful Forks", host:"useful-forks.github.io",
+   build:r=>`https://useful-forks.github.io/?repo=${r.owner}/${r.name}`,
+   what:"Lists the forks that actually have new commits, ranked by activity.",
+   rule:"useful-forks.github.io/?repo=owner/repo", uses:["Finding a maintained fork of an abandoned project"]},
+
+  // ---- Files ----
+  {id:"zip", group:"Download files", name:"Download ZIP", host:"github.com/…/archive",
+   build:r=>`https://github.com/${r.owner}/${r.name}/archive/HEAD.zip`,
+   what:"Downloads the default branch as a ZIP, no git needed.",
+   rule:"add /archive/HEAD.zip", uses:["Grabbing the code on a machine without git"]},
+  {id:"downloaddir", group:"Download files", name:"Download a folder", host:"download-directory.github.io",
+   build:r=>`https://download-directory.github.io/?url=${encodeURIComponent(r.full)}`,
+   what:"Downloads just one folder of a repo as a ZIP.",
+   rule:"download-directory.github.io/?url=<folder URL>", uses:["Taking only /examples or /docs from a huge repo"],
+   note:"Paste a folder link (…/tree/main/folder) above to download only that folder."},
+  {id:"jsdelivr", group:"Download files", name:"jsDelivr CDN", host:"cdn.jsdelivr.net/gh",
+   build:r=>`https://cdn.jsdelivr.net/gh/${r.owner}/${r.name}/`,
+   what:"Serves the repo’s files over a fast CDN, so you can link a JS or CSS file straight from your web page.",
+   rule:"cdn.jsdelivr.net/gh/owner/repo/file", uses:["Using a file from a repo in a <script> tag"]}
+];
+
+const $ = s => document.querySelector(s);
+const input = $("#repo"), toolsEl = $("#tools"), bodyEl = $("#body"), msg = $("#msg");
+let repo = null, current = null;
+
+function parseRepo(text){
+  let t = text.trim();
+  if(!t) return null;
+  t = t.replace(/^git@github\.com:/i,"https://github.com/").replace(/\.git$/i,"");
+  if(!/^https?:\/\//i.test(t)) t = (/^(www\.)?github\.com\//i.test(t) ? "https://" : "https://github.com/") + t;
+  let u; try{ u = new URL(t); }catch(e){ return null; }
+  if(!/^(www\.)?github\.com$/i.test(u.hostname)) return null;
+  const parts = u.pathname.split("/").filter(Boolean);
+  if(parts.length < 2) return null;
+  const [owner, name, ...more] = parts;
+  const rest = more.length ? "/" + more.join("/") : "";
+  return {owner, name, rest, full:`https://github.com/${owner}/${name}${rest}`};
+}
+
+function renderTools(){
+  const groups = [...new Set(TOOLS.map(t=>t.group))];
+  toolsEl.innerHTML = groups.map(g=>`<h2>${g}</h2>` + TOOLS.filter(t=>t.group===g).map(t=>
+    `<button data-id="${t.id}" aria-pressed="${current===t.id}" ${repo?"":"disabled"}>
+       <span>${t.name}</span><small>${t.host}</small></button>`).join("")).join("");
+  toolsEl.querySelectorAll("button").forEach(b=>b.onclick=()=>select(b.dataset.id));
+}
+
+function esc(s){return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+
+function swapHTML(t){
+  const out = t.build(repo);
+  const u = new URL(out);
+  const head = `${u.protocol}//${u.host}`;
+  const tail = out.slice(head.length);
+  return `<div class="swap"><span class="from">${esc(repo.full)}</span>
+    <span class="to">${esc(u.protocol)}//<mark>${esc(u.host)}</mark>${esc(tail)}</span></div>`;
+}
+
+function select(id){
+  current = id; renderTools();
+  const t = TOOLS.find(x=>x.id===id), url = t.build(repo);
+  const fileHint = t.needsFile && !/\/blob\//.test(repo.rest);
+  bodyEl.innerHTML = `<div class="result">
+    ${swapHTML(t)}
+    <h2>${t.name}</h2>
+    <p class="what">${t.what}</p>
+    <p class="rule">How the link is made: <code>${esc(t.rule)}</code></p>
+    ${t.note ? `<p class="note">${esc(t.note)}</p>` : ""}
+    ${fileHint ? `<p class="note">You loaded a repo, not a file, so this link may show an error.</p>` : ""}
+    <div class="actions">
+      <a class="btn" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Open in ${esc(t.name)}</a>
+      <button class="btn ghost" id="copyOne">Copy link</button>
+    </div>
+    <p style="margin:0 0 6px;font-weight:600">Good for</p>
+    <ul class="uses">${t.uses.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+  </div>${allLinksHTML()}`;
+  $("#copyOne").onclick=()=>copy(url,"Link copied");
+  bindCopyAll();
+}
+
+function allLinksHTML(){
+  return `<section class="all"><h3>Every link for ${esc(repo.owner)}/${esc(repo.name)}</h3>
+    <div class="tablewrap"><table>${TOOLS.map(t=>{const u=t.build(repo);
+      return `<tr><td>${t.name}</td><td><a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(u)}</a></td></tr>`}).join("")}
+    </table></div>
+    <p style="margin-top:12px"><button class="btn ghost" id="copyAll">Copy all links</button></p></section>`;
+}
+function bindCopyAll(){
+  const b = $("#copyAll");
+  if(b) b.onclick=()=>copy(TOOLS.map(t=>`${t.name}: ${t.build(repo)}`).join("\n"),"All links copied");
+}
+
+function emptyState(){
+  bodyEl.innerHTML = repo
+    ? `<div class="empty"><h2>${esc(repo.owner)}/${esc(repo.name)} is loaded</h2>
+       <p>Pick a tool on the left to see its link and what it does.</p></div>${allLinksHTML()}`
+    : `<div class="empty"><h2>Start with a repository</h2>
+       <p>Paste any GitHub link above, like <code>https://github.com/facebook/react</code>, or just <code>facebook/react</code>. Then choose a tool to see the matching link here.</p></div>`;
+  bindCopyAll();
+}
+
+function load(){
+  const r = parseRepo(input.value);
+  if(!r){ msg.textContent = input.value.trim() ? "That isn’t a GitHub repo link. Use github.com/owner/repo or owner/repo." : "Paste a GitHub repo link first."; return; }
+  msg.textContent = ""; repo = r;
+  try{ localStorage.setItem("repolens:last", input.value.trim()); }catch(e){}
+  if(current) select(current); else { renderTools(); emptyState(); }
+}
+
+async function copy(text,label){
+  try{ await navigator.clipboard.writeText(text); }
+  catch(e){ const ta=document.createElement("textarea"); ta.value=text; document.body.appendChild(ta); ta.select();
+    try{document.execCommand("copy")}catch(_){} ta.remove(); }
+  const t=$("#toast"); t.textContent=label; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1400);
+}
+
+$("#load").onclick = load;
+input.addEventListener("keydown",e=>{ if(e.key==="Enter") load(); });
+document.querySelectorAll("[data-ex]").forEach(b=>b.onclick=()=>{ input.value=b.dataset.ex; load(); });
+
+try{ const last = localStorage.getItem("repolens:last"); if(last){ input.value = last; } }catch(e){}
+renderTools(); emptyState();
+if(input.value) load();
+</script>
+</body>
+</html>
